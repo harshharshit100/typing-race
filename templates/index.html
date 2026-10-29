@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Typing Race is a fast, minimal typing speed test with live analytics, personal records, 15s / 30s / 60s modes and a global leaderboard.">
+  <meta name="theme-color" content="#070912">
+  <meta property="og:title" content="Typing Race · Typing Speed Test">
+  <meta property="og:description" content="Measure your WPM, accuracy and consistency. Race the clock, beat your record, climb the leaderboard.">
+  <meta property="og:type" content="website">
+  <title>Typing Race · Typing Speed Test</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23070912'/%3E%3Crect x='12' y='20' width='40' height='26' rx='7' fill='none' stroke='%237c5cff' stroke-width='4'/%3E%3Cpath d='M21 29h2m6 0h2m6 0h2m6 0h2M24 38h16' stroke='%2322d3ee' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
+</head>
+<body>
+  <div class="aurora" aria-hidden="true">
+    <span class="aurora-blob blob-one"></span>
+    <span class="aurora-blob blob-two"></span>
+    <span class="aurora-blob blob-three"></span>
+    <span class="grid-overlay"></span>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Typing Race home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5.5" width="20" height="13" rx="3"></rect>
+          <path d="M6 9.5h.01M10 9.5h.01M14 9.5h.01M18 9.5h.01M7 14.5h10"></path>
+        </svg>
+      </span>
+      <span class="brand-name">Typing<span>Race</span></span>
+    </a>
+
+    <div class="header-actions">
+      <span class="status-pill" id="connectionState" data-state="checking">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="connectionText">connecting</span>
+      </span>
+      <button class="icon-btn" id="soundToggle" type="button" aria-pressed="false" aria-label="Toggle key sounds" title="Enable key sounds">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"></path>
+          <path class="sound-wave" d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+          <path class="sound-wave" d="M18.5 6a8.5 8.5 0 0 1 0 12"></path>
+          <path class="sound-slash" d="m16 9 5 6m0-6-5 6"></path>
+        </svg>
+      </button>
+      <button class="icon-btn theme-toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme" title="Switch to light theme">
+        <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"></path>
+        </svg>
+        <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+        <span class="theme-label" id="themeLabel">dark</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow"><span class="pulse-dot" aria-hidden="true"></span> the keyboard is your racetrack</p>
+      <h1>Type at the <span class="gradient-text">speed of thought.</span></h1>
+      <p class="lede">
+        A precision typing test with live WPM, accuracy and consistency analytics.
+        Pick a mode, start typing, and chase your personal record.
+      </p>
+    </section>
+
+    <section class="test-card" id="testCard" aria-label="Typing test">
+      <div class="test-toolbar">
+        <div class="mode-switch" role="group" aria-label="Test mode">
+          <button type="button" data-mode="time-15" aria-pressed="false">15s</button>
+          <button type="button" data-mode="time-30" aria-pressed="true">30s</button>
+          <button type="button" data-mode="time-60" aria-pressed="false">60s</button>
+          <button type="button" data-mode="quote" aria-pressed="false">quote</button>
+          <button type="button" data-mode="custom" id="customModeBtn" aria-pressed="false" aria-expanded="false" aria-haspopup="true" aria-controls="customTimeForm" title="Choose a custom test length">custom</button>
+        </div>
+
+        <div class="toggle-group" aria-label="Text options">
+          <label class="toggle">
+            <input id="punctuationToggle" type="checkbox" checked>
+            <span class="toggle-track" aria-hidden="true"><span></span></span>
+            <span class="toggle-label">punctuation</span>
+          </label>
+          <label class="toggle">
+            <input id="numbersToggle" type="checkbox">
+            <span class="toggle-track" aria-hidden="true"><span></span></span>
+            <span class="toggle-label">numbers</span>
+          </label>
+        </div>
+
+        <form class="custom-time hidden" id="customTimeForm" autocomplete="off" novalidate>
+          <label for="customSeconds">custom time</label>
+          <input id="customSeconds" name="customSeconds" type="number" inputmode="numeric" min="5" max="300" step="1" value="45" aria-label="Custom test length in seconds">
+          <span class="custom-unit">seconds</span>
+          <button class="btn btn-primary btn-small" type="submit">start</button>
+          <button class="btn btn-ghost btn-small" id="cancelCustomTime" type="button">cancel</button>
+        </form>
+      </div>
+
+      <div class="live-bar">
+        <div class="live-stat">
+          <span class="live-label">time</span>
+          <span class="live-value"><strong id="timer">30</strong><small id="timerUnit">s</small></span>
+        </div>
+        <div class="live-stat">
+          <span class="live-label">wpm</span>
+          <span class="live-value"><strong id="wpm">0</strong></span>
+        </div>
+        <div class="live-stat">
+          <span class="live-label">accuracy</span>
+          <span class="live-value"><strong id="accuracy">100</strong><small>%</small></span>
+        </div>
+        <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+      </div>
+
+      <div class="type-stage" id="stage">
+        <div class="words" id="words" aria-label="Text to type"></div>
+        <div class="caret is-hidden" id="caret" aria-hidden="true"></div>
+        <textarea
+          id="input"
+          class="hidden-input"
+          rows="3"
+          aria-label="Typing input"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          wrap="off"
+        ></textarea>
+        <div class="stage-hint" id="stageHint" aria-hidden="true">click here or start typing</div>
+      </div>
+
+      <div class="test-footer">
+        <div class="key-hints">
+          <span><kbd>esc</kbd> restart</span>
+          <span><kbd>enter</kbd> retry after a test</span>
+          <span class="fair-play">pasting disabled</span>
+        </div>
+        <button class="btn btn-ghost" id="restart" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          restart
+        </button>
+      </div>
+    </section>
+
+    <section class="dashboard">
+      <section class="panel records-panel" aria-labelledby="recordsTitle">
+        <div class="panel-head">
+          <div>
+            <span class="panel-kicker">saved on this device</span>
+            <h2 id="recordsTitle">Your records</h2>
+          </div>
+          <span class="panel-note" id="testsCount">no tests yet</span>
+        </div>
+
+        <div class="best-grid" id="bestGrid"></div>
+
+        <div class="records-footer">
+          <div class="spark-wrap">
+            <span class="spark-label">recent WPM</span>
+            <canvas id="historyChart" aria-label="Recent words per minute trend"></canvas>
+          </div>
+          <div class="mini-stats">
+            <div><strong id="avgWpm">—</strong><span>avg wpm</span></div>
+            <div><strong id="bestEver">—</strong><span>best wpm</span></div>
+            <div><strong id="streak">0</strong><span>day streak</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel board-panel" aria-labelledby="boardTitle">
+        <div class="panel-head">
+          <div>
+            <span class="panel-kicker">global rankings</span>
+            <h2 id="boardTitle">Leaderboard</h2>
+          </div>
+          <span class="panel-note" id="boardSubtitle">top 10 · 30s</span>
+        </div>
+
+        <div class="board-filter" id="boardFilter" role="group" aria-label="Leaderboard mode">
+          <button type="button" data-board-mode="time-15" aria-pressed="false">15s</button>
+          <button type="button" data-board-mode="time-30" aria-pressed="true">30s</button>
+          <button type="button" data-board-mode="time-60" aria-pressed="false">60s</button>
+          <button type="button" data-board-mode="quote" aria-pressed="false">quote</button>
+          <button type="button" data-board-mode="custom" aria-pressed="false">custom</button>
+        </div>
+
+        <ol class="board" id="leaderboard" aria-live="polite"></ol>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Typing Race — built with Flask. Your records stay in this browser; saved scores are shared.</p>
+    <p class="footer-keys"><kbd>esc</kbd> restart · <kbd>enter</kbd> retry after a test · type anywhere to jump back in</p>
+  </footer>
+
+  <div class="overlay hidden" id="resultOverlay" aria-hidden="true">
+    <div class="result-card" id="resultCard" role="dialog" aria-modal="true" aria-labelledby="resultTitle" tabindex="-1">
+      <button class="close-btn" id="closeResult" type="button" aria-label="Close results and start a new test">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="m6 6 12 12M18 6 6 18"></path>
+        </svg>
+      </button>
+
+      <div class="result-head">
+        <div>
+          <p class="eyebrow" id="resultModeLabel">30 second test</p>
+          <h2 id="resultTitle">Run complete</h2>
+        </div>
+        <span class="pb-badge hidden" id="pbBadge">★ new personal best</span>
+      </div>
+
+      <div class="result-hero">
+        <div class="big-stat">
+          <strong id="resultWpm">0</strong>
+          <span>wpm</span>
+        </div>
+        <div class="result-side">
+          <div><strong id="resultAcc">0</strong><span>% accuracy</span></div>
+          <div><strong id="resultRaw">0</strong><span>raw wpm</span></div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="wpmChart" aria-label="Words per minute over time"></canvas>
+        <div class="chart-meta"><span>wpm over time</span><span id="chartPeak">peak 0 wpm</span></div>
+      </div>
+
+      <div class="result-metrics">
+        <div><strong id="resultConsistency">0%</strong><span>consistency</span></div>
+        <div><strong id="resultChars">0/0</strong><span>correct chars</span></div>
+        <div><strong id="resultTime">0s</strong><span>duration</span></div>
+        <div><strong id="resultErrors">0</strong><span>errors</span></div>
+      </div>
+
+      <form class="save-form" id="saveForm" autocomplete="off">
+        <input id="playerName" type="text" maxlength="20" placeholder="Your name (optional)" aria-label="Your name for the leaderboard">
+        <button class="btn btn-primary" id="saveBtn" type="submit">Save to leaderboard</button>
+        <button class="btn btn-ghost" id="shareBtn" type="button">Copy result</button>
+      </form>
+      <p class="save-msg" id="saveMsg" role="status"></p>
+
+      <div class="result-actions">
+        <button class="btn btn-ghost" id="retryBtn" type="button">try again</button>
+        <button class="btn btn-primary" id="nextBtn" type="button">next: 60s</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <noscript>
+    <p class="noscript">Typing Race needs JavaScript to run the typing test.</p>
+  </noscript>
+
+  <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
